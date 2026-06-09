@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pagamentos | Painel</title>
+
+  <!-- Google Font -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Bootstrap 4 -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+  <!-- AdminLTE -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
+  <!-- DataTables -->
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap4.min.css">
+
+  <style>
+    .badge-pix    { background-color: #28a745; color: #fff; }
+    .badge-cartao { background-color: #007bff; color: #fff; }
+    .badge-dinheiro { background-color: #ffc107; color: #212529; }
+    .info-box-icon { font-size: 2rem; }
+  </style>
+</head>
+<body class="hold-transition sidebar-mini layout-fixed">
+<div class="wrapper">
+
+  <!-- Navbar -->
+  <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+    <ul class="navbar-nav">
+      <li class="nav-item">
+        <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
+      </li>
+      <li class="nav-item d-none d-sm-inline-block">
+        <a href="#" class="nav-link">Painel de Pagamentos</a>
+      </li>
+    </ul>
+    <ul class="navbar-nav ml-auto">
+      <li class="nav-item">
+        <span class="nav-link text-muted small" id="api-status">
+          <i class="fas fa-circle text-warning"></i> Verificando API...
+        </span>
+      </li>
+    </ul>
+  </nav>
+
+  <!-- Sidebar -->
+  <aside class="main-sidebar sidebar-dark-primary elevation-4">
+    <a href="#" class="brand-link">
+      <i class="fas fa-credit-card ml-3 mr-2"></i>
+      <span class="brand-text font-weight-light">Pagamentos</span>
+    </a>
+    <div class="sidebar">
+      <nav class="mt-2">
+        <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu">
+          <li class="nav-item">
+            <a href="#" class="nav-link active" onclick="showSection('pagamentos')">
+              <i class="nav-icon fas fa-list"></i>
+              <p>Todos os Pagamentos</p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="#" class="nav-link" onclick="showSection('busca-pedido')">
+              <i class="nav-icon fas fa-search"></i>
+              <p>Buscar por Pedido</p>
+            </a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </aside>
+
+  <!-- Content Wrapper -->
+  <div class="content-wrapper">
+    <div class="content-header">
+      <div class="container-fluid">
+        <div class="row mb-2">
+          <div class="col-sm-6">
+            <h1 class="m-0" id="page-title">Pagamentos</h1>
+          </div>
+          <div class="col-sm-6">
+            <ol class="breadcrumb float-sm-right">
+              <li class="breadcrumb-item active" id="breadcrumb-current">Lista</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <section class="content">
+      <div class="container-fluid">
+
+        <!-- ======================== SEÇÃO: PAGAMENTOS ======================== -->
+        <div id="section-pagamentos">
+
+          <!-- Cards de resumo -->
+          <div class="row" id="cards-resumo">
+            <div class="col-lg-3 col-6">
+              <div class="small-box bg-info">
+                <div class="inner">
+                  <h3 id="total-pagamentos">—</h3>
+                  <p>Total de Pagamentos</p>
+                </div>
+                <div class="icon"><i class="fas fa-file-invoice-dollar"></i></div>
+              </div>
+            </div>
+            <div class="col-lg-3 col-6">
+              <div class="small-box bg-success">
+                <div class="inner">
+                  <h3 id="total-valor">—</h3>
+                  <p>Valor Total</p>
+                </div>
+                <div class="icon"><i class="fas fa-dollar-sign"></i></div>
+              </div>
+            </div>
+            <div class="col-lg-3 col-6">
+              <div class="small-box bg-warning">
+                <div class="inner">
+                  <h3 id="total-pix">—</h3>
+                  <p>Pagamentos PIX</p>
+                </div>
+                <div class="icon"><i class="fas fa-qrcode"></i></div>
+              </div>
+            </div>
+            <div class="col-lg-3 col-6">
+              <div class="small-box bg-danger">
+                <div class="inner">
+                  <h3 id="total-cartao">—</h3>
+                  <p>Pagamentos Cartão</p>
+                </div>
+                <div class="icon"><i class="fas fa-credit-card"></i></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tabela -->
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Lista de Pagamentos</h3>
+              <div class="card-tools">
+                <button class="btn btn-primary btn-sm" onclick="abrirModalCriar()">
+                  <i class="fas fa-plus"></i> Novo Pagamento
+                </button>
+              </div>
+            </div>
+            <div class="card-body">
+              <table id="tabela-pagamentos" class="table table-bordered table-striped table-hover">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Pedido</th>
+                    <th>Forma de Pagamento</th>
+                    <th>Valor</th>
+                    <th>Ações</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ======================== SEÇÃO: BUSCA POR PEDIDO ======================== -->
+        <div id="section-busca-pedido" style="display:none">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Buscar Pagamentos por Pedido</h3>
+            </div>
+            <div class="card-body">
+              <div class="input-group mb-3" style="max-width:400px">
+                <input type="number" id="input-pedido-id" class="form-control" placeholder="ID do pedido">
+                <div class="input-group-append">
+                  <button class="btn btn-primary" onclick="buscarPorPedido()">
+                    <i class="fas fa-search"></i> Buscar
+                  </button>
+                </div>
+              </div>
+              <div id="resultado-busca"></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+  </div>
+
+  <footer class="main-footer">
+    <strong>API de Pagamentos</strong> &mdash; Microsserviço de processamento de pedidos.
+  </footer>
+</div>
+
+<!-- ======================== MODAL: CRIAR PAGAMENTO ======================== -->
+<div class="modal fade" id="modal-criar" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header bg-primary">
+        <h5 class="modal-title text-white"><i class="fas fa-plus mr-2"></i>Novo Pagamento</h5>
+        <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+      </div>
+      <div class="modal-body">
+        <div id="criar-erro" class="alert alert-danger d-none"></div>
+        <div class="form-group">
+          <label>ID do Pedido <span class="text-danger">*</span></label>
+          <input type="number" id="criar-pedido" class="form-control" placeholder="Ex: 3">
+        </div>
+        <div class="form-group">
+          <label>Forma de Pagamento <span class="text-danger">*</span></label>
+          <select id="criar-forma" class="form-control">
+            <option value="">Selecione...</option>
+            <option value="PIX">PIX</option>
+            <option value="CARTAO">CARTÃO</option>
+            <option value="DINHEIRO">DINHEIRO</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Valor (R$) <span class="text-danger">*</span></label>
+          <input type="number" id="criar-valor" class="form-control" placeholder="Ex: 45.90" step="0.01" min="0">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-primary" onclick="criarPagamento()">
+          <i class="fas fa-save mr-1"></i>Salvar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ======================== MODAL: EDITAR PAGAMENTO ======================== -->
+<div class="modal fade" id="modal-editar" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header bg-warning">
+        <h5 class="modal-title"><i class="fas fa-edit mr-2"></i>Editar Pagamento</h5>
+        <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+      </div>
+      <div class="modal-body">
+        <div id="editar-erro" class="alert alert-danger d-none"></div>
+        <input type="hidden" id="editar-id">
+        <div class="form-group">
+          <label>Forma de Pagamento <span class="text-danger">*</span></label>
+          <select id="editar-forma" class="form-control">
+            <option value="PIX">PIX</option>
+            <option value="CARTAO">CARTÃO</option>
+            <option value="DINHEIRO">DINHEIRO</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Valor (R$) <span class="text-danger">*</span></label>
+          <input type="number" id="editar-valor" class="form-control" step="0.01" min="0">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-warning" onclick="editarPagamento()">
+          <i class="fas fa-save mr-1"></i>Atualizar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ======================== MODAL: DELETAR PAGAMENTO ======================== -->
+<div class="modal fade" id="modal-deletar" tabindex="-1">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content">
+      <div class="modal-header bg-danger">
+        <h5 class="modal-title text-white"><i class="fas fa-trash mr-2"></i>Remover Pagamento</h5>
+        <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="deletar-id">
+        <p>Tem certeza que deseja remover o pagamento <strong id="deletar-info"></strong>?</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-danger" onclick="deletarPagamento()">
+          <i class="fas fa-trash mr-1"></i>Remover
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.7.0/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap4.min.js"></script>
+
+<script>
+  const API = 'https://api-pagamentos-xtnx.onrender.com';
+
+  let tabela;
+
+  // ── Utilitários ──────────────────────────────────────────────────────────────
+
+  function badgeForma(forma) {
+    const map = {
+      PIX:      '<span class="badge badge-pix px-2 py-1">PIX</span>',
+      CARTAO:   '<span class="badge badge-cartao px-2 py-1">CARTÃO</span>',
+      DINHEIRO: '<span class="badge badge-dinheiro px-2 py-1">DINHEIRO</span>',
+    };
+    return map[forma] || `<span class="badge badge-secondary">${forma}</span>`;
+  }
+
+  function formatarValor(v) {
+    return 'R$ ' + parseFloat(v).toFixed(2).replace('.', ',');
+  }
+
+  function mostrarErro(elId, msg) {
+    const el = document.getElementById(elId);
+    el.textContent = msg;
+    el.classList.remove('d-none');
+  }
+
+  function esconderErro(elId) {
+    document.getElementById(elId).classList.add('d-none');
+  }
+
+  // ── Navegação ─────────────────────────────────────────────────────────────────
+
+  function showSection(nome) {
+    document.getElementById('section-pagamentos').style.display  = nome === 'pagamentos'   ? '' : 'none';
+    document.getElementById('section-busca-pedido').style.display = nome === 'busca-pedido' ? '' : 'none';
+
+    document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
+    event.currentTarget.classList.add('active');
+
+    document.getElementById('page-title').textContent =
+      nome === 'pagamentos' ? 'Pagamentos' : 'Buscar por Pedido';
+    document.getElementById('breadcrumb-current').textContent =
+      nome === 'pagamentos' ? 'Lista' : 'Busca por Pedido';
+  }
+
+  // ── Status da API ─────────────────────────────────────────────────────────────
+
+  async function verificarAPI() {
+    try {
+      const r = await fetch(`${API}/`);
+      if (r.ok) {
+        document.getElementById('api-status').innerHTML =
+          '<i class="fas fa-circle text-success"></i> API online';
+      }
+    } catch {
+      document.getElementById('api-status').innerHTML =
+        '<i class="fas fa-circle text-danger"></i> API offline';
+    }
+  }
+
+  // ── Carregar e renderizar tabela ──────────────────────────────────────────────
+
+  async function carregarPagamentos() {
+    const res = await fetch(`${API}/pagamentos`);
+    const dados = await res.json();
+
+    if (tabela) tabela.destroy();
+
+    const tbody = document.querySelector('#tabela-pagamentos tbody');
+    tbody.innerHTML = dados.map(p => `
+      <tr>
+        <td>${p.id}</td>
+        <td><span class="badge badge-secondary">#${p.pedido}</span></td>
+        <td>${badgeForma(p.forma_pagamento)}</td>
+        <td><strong>${formatarValor(p.valor)}</strong></td>
+        <td>
+          <button class="btn btn-xs btn-warning mr-1" onclick="abrirModalEditar(${p.id}, '${p.forma_pagamento}', ${p.valor})">
+            <i class="fas fa-edit"></i> Editar
+          </button>
+          <button class="btn btn-xs btn-danger" onclick="abrirModalDeletar(${p.id}, ${p.pedido})">
+            <i class="fas fa-trash"></i> Remover
+          </button>
+        </td>
+      </tr>
+    `).join('');
+
+    tabela = $('#tabela-pagamentos').DataTable({
+      language: {
+        url: 'https://cdn.datatables.net/plug-ins/1.13.6/i18n/pt-BR.json'
+      },
+      order: [[0, 'desc']],
+      columnDefs: [{ orderable: false, targets: 4 }]
+    });
+
+    atualizarCards(dados);
+  }
+
+  function atualizarCards(dados) {
+    const total = dados.length;
+    const valorTotal = dados.reduce((s, p) => s + parseFloat(p.valor), 0);
+    const pix    = dados.filter(p => p.forma_pagamento === 'PIX').length;
+    const cartao = dados.filter(p => p.forma_pagamento === 'CARTAO').length;
+
+    document.getElementById('total-pagamentos').textContent = total;
+    document.getElementById('total-valor').textContent = 'R$ ' + valorTotal.toFixed(2).replace('.', ',');
+    document.getElementById('total-pix').textContent = pix;
+    document.getElementById('total-cartao').textContent = cartao;
+  }
+
+  // ── Criar ─────────────────────────────────────────────────────────────────────
+
+  function abrirModalCriar() {
+    document.getElementById('criar-pedido').value = '';
+    document.getElementById('criar-forma').value  = '';
+    document.getElementById('criar-valor').value  = '';
+    esconderErro('criar-erro');
+    $('#modal-criar').modal('show');
+  }
+
+  async function criarPagamento() {
+    const pedido         = document.getElementById('criar-pedido').value.trim();
+    const forma_pagamento = document.getElementById('criar-forma').value;
+    const valor          = document.getElementById('criar-valor').value.trim();
+
+    if (!pedido || !forma_pagamento || !valor) {
+      mostrarErro('criar-erro', 'Preencha todos os campos obrigatórios.');
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API}/pagamentos`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pedido: Number(pedido), forma_pagamento, valor: Number(valor) })
+      });
+      const data = await res.json();
+      if (!res.ok) { mostrarErro('criar-erro', data.erro || 'Erro ao criar.'); return; }
+
+      $('#modal-criar').modal('hide');
+      carregarPagamentos();
+    } catch {
+      mostrarErro('criar-erro', 'Erro de conexão com a API.');
+    }
+  }
+
+  // ── Editar ────────────────────────────────────────────────────────────────────
+
+  function abrirModalEditar(id, forma, valor) {
+    document.getElementById('editar-id').value    = id;
+    document.getElementById('editar-forma').value = forma;
+    document.getElementById('editar-valor').value = valor;
+    esconderErro('editar-erro');
+    $('#modal-editar').modal('show');
+  }
+
+  async function editarPagamento() {
+    const id             = document.getElementById('editar-id').value;
+    const forma_pagamento = document.getElementById('editar-forma').value;
+    const valor          = document.getElementById('editar-valor').value.trim();
+
+    if (!forma_pagamento || !valor) {
+      mostrarErro('editar-erro', 'Preencha todos os campos.');
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API}/pagamentos/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ forma_pagamento, valor: Number(valor) })
+      });
+      const data = await res.json();
+      if (!res.ok) { mostrarErro('editar-erro', data.erro || 'Erro ao atualizar.'); return; }
+
+      $('#modal-editar').modal('hide');
+      carregarPagamentos();
+    } catch {
+      mostrarErro('editar-erro', 'Erro de conexão com a API.');
+    }
+  }
+
+  // ── Deletar ───────────────────────────────────────────────────────────────────
+
+  function abrirModalDeletar(id, pedido) {
+    document.getElementById('deletar-id').value = id;
+    document.getElementById('deletar-info').textContent = `#${id} (pedido ${pedido})`;
+    $('#modal-deletar').modal('show');
+  }
+
+  async function deletarPagamento() {
+    const id = document.getElementById('deletar-id').value;
+    try {
+      await fetch(`${API}/pagamentos/${id}`, { method: 'DELETE' });
+      $('#modal-deletar').modal('hide');
+      carregarPagamentos();
+    } catch {
+      alert('Erro de conexão com a API.');
+    }
+  }
+
+  // ── Busca por pedido ──────────────────────────────────────────────────────────
+
+  async function buscarPorPedido() {
+    const pedidoId = document.getElementById('input-pedido-id').value.trim();
+    const container = document.getElementById('resultado-busca');
+
+    if (!pedidoId) { container.innerHTML = '<div class="alert alert-warning">Informe o ID do pedido.</div>'; return; }
+
+    try {
+      const res = await fetch(`${API}/pagamentos/pedido/${pedidoId}`);
+      const dados = await res.json();
+
+      if (!Array.isArray(dados) || dados.length === 0) {
+        container.innerHTML = '<div class="alert alert-info">Nenhum pagamento encontrado para este pedido.</div>';
+        return;
+      }
+
+      container.innerHTML = `
+        <table class="table table-bordered table-striped">
+          <thead><tr><th>ID</th><th>Pedido</th><th>Forma de Pagamento</th><th>Valor</th></tr></thead>
+          <tbody>
+            ${dados.map(p => `
+              <tr>
+                <td>${p.id}</td>
+                <td>#${p.pedido}</td>
+                <td>${badgeForma(p.forma_pagamento)}</td>
+                <td><strong>${formatarValor(p.valor)}</strong></td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+        <p class="text-muted small">${dados.length} pagamento(s) encontrado(s) para o pedido #${pedidoId}.</p>
+      `;
+    } catch {
+      container.innerHTML = '<div class="alert alert-danger">Erro de conexão com a API.</div>';
+    }
+  }
+
+  document.getElementById('input-pedido-id')?.addEventListener('keydown', e => {
+    if (e.key === 'Enter') buscarPorPedido();
+  });
+
+  // ── Init ──────────────────────────────────────────────────────────────────────
+
+  verificarAPI();
+  carregarPagamentos();
+</script>
+</body>
+</html>
